@@ -13,7 +13,7 @@ func main() {
 	}
 	defer f.Close()
 
-	for _, c := range <-getLinesChannel(f) {
-		fmt.Printf("read: %v", c)
+	for line := range getLinesChannel(f) {
+		fmt.Printf("read: %v\n", line)
 	}
 }
