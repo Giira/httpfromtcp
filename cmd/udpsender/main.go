@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -14,7 +13,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("error resolving udp address: %v", err)
 	}
-	udpConn, err := net.DialUDP("udp", udpAddr, udpAddr)
+	udpConn, err := net.DialUDP("udp", nil, udpAddr)
 	if err != nil {
 		log.Fatalf("error dialing udp: %v", err)
 	}
@@ -27,11 +26,7 @@ func main() {
 		if err != nil {
 			log.Fatalf("errpr reading line: %v", err)
 		}
-		byteLine, err := json.Marshal(line)
-		if err != nil {
-			log.Fatalf("error marshalling line: %v", err)
-		}
-		_, err = udpConn.Write(byteLine)
+		_, err = udpConn.Write([]byte(line))
 		if err != nil {
 			log.Fatalf("error writing line to udp connection: %v", err)
 		}
