@@ -1,8 +1,8 @@
 package request
 
 import (
+	"fmt"
 	"io"
-	"log"
 	"strings"
 )
 
@@ -19,9 +19,14 @@ type RequestLine struct {
 func RequestFromReader(reader io.Reader) (*Request, error) {
 	input, err := io.ReadAll(reader)
 	if err != nil {
-		log.Fatalf("error reading request: %v", err)
+		return nil, fmt.Errorf("error reading from io reader: %v", err)
 	}
 	rl := parseRequestLine(input)
+	var r *Request
+	r = &Request{
+		RequestLine: rl,
+	}
+	return r, nil
 }
 
 func parseRequestLine(input []byte) RequestLine {
