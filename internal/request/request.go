@@ -21,7 +21,10 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error reading from io reader: %v", err)
 	}
-	rl := parseRequestLine(input)
+	rl, err := parseRequestLine(input)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing request line: %v", err)
+	}
 	var r *Request
 	r = &Request{
 		RequestLine: rl,
@@ -29,12 +32,17 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 	return r, nil
 }
 
-func parseRequestLine(input []byte) RequestLine {
+func parseRequestLine(input []byte) (RequestLine, error) {
 	lines := strings.Split(string(input), "\r\n")
-	rl := RequestLine{
-		HttpVersion:   lines[0],
-		RequestTarget: lines[1],
-		Method:        lines[2],
+	line := strings.Split(lines[0], " ")
+	if len(line) != 3 {
+		return RequestLine{}, fmt.Errorf("error: request line should always have 3 parts, not %v", len(line))
 	}
-	return rl
+	rl := RequestLine{
+		HttpVersion:   line[2],
+		RequestTarget: line[1],
+		Method:        strings.TrimLeft(line[0], "HTTP/"),
+	}
+	fmt.Println(rl.HttpVersion)
+	return rl, nil
 }
