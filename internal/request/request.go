@@ -39,9 +39,9 @@ func parseRequestLine(input []byte) (RequestLine, error) {
 		return RequestLine{}, fmt.Errorf("error: request line should always have 3 parts, not %v", len(line))
 	}
 	rl := RequestLine{
-		HttpVersion:   line[2],
+		HttpVersion:   strings.TrimPrefix(line[2], "HTTP/"),
 		RequestTarget: line[1],
-		Method:        strings.TrimLeft(line[0], "HTTP/"),
+		Method:        line[0],
 	}
 	fmt.Println(rl.HttpVersion)
 	return rl, nil
