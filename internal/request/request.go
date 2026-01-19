@@ -38,11 +38,22 @@ func parseRequestLine(input []byte) (RequestLine, error) {
 	if len(line) != 3 {
 		return RequestLine{}, fmt.Errorf("error: request line should always have 3 parts, not %v", len(line))
 	}
+	version := strings.Split(line[2], "/")
 	rl := RequestLine{
-		HttpVersion:   strings.TrimPrefix(line[2], "HTTP/"),
+		HttpVersion:   version[1],
 		RequestTarget: line[1],
 		Method:        line[0],
 	}
-	fmt.Println(rl.HttpVersion)
+	if version[0] != "HTTP" || version[1] != "1.1" {
+		return RequestLine{}, fmt.Errorf("error: unrecognised http version")
+	}
+	if strings.ToUpper(rl.Method) != rl.Method {
+		return RequestLine{}, fmt.Errorf("error: method not correctly formatted")
+	}
+	for _, char := range rl.Method {
+		if char < 'A' || char > 'Z' {
+			return RequestLine{}, fmt.Errorf("error: method contains non alphanumeric characters")
+		}
+	}
 	return rl, nil
 }
