@@ -8,6 +8,7 @@ import (
 
 type Request struct {
 	RequestLine RequestLine
+	State       int
 }
 
 type RequestLine struct {
@@ -28,6 +29,7 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 	var r *Request
 	r = &Request{
 		RequestLine: rl,
+		State:       0,
 	}
 	return r, nil
 }
@@ -35,6 +37,9 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 func parseRequestLine(input []byte) (RequestLine, int, error) {
 	bytes := 0
 	lines := strings.Split(string(input), "\r\n")
+	if len(lines) == 1 {
+		return RequestLine{}, 0, nil
+	}
 	line := strings.Split(lines[0], " ")
 	if len(line) != 3 {
 		return RequestLine{}, bytes, fmt.Errorf("error: request line should always have 3 parts, not %v", len(line))
@@ -57,4 +62,10 @@ func parseRequestLine(input []byte) (RequestLine, int, error) {
 		}
 	}
 	return rl, bytes, nil
+}
+
+func (r *Request) parse(data []byte) (int, error) {
+	if r.State == 0 {
+		rl, i, err := parseRequestLine(data)
+	}
 }
