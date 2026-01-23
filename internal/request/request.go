@@ -67,5 +67,19 @@ func parseRequestLine(input []byte) (RequestLine, int, error) {
 func (r *Request) parse(data []byte) (int, error) {
 	if r.State == 0 {
 		rl, i, err := parseRequestLine(data)
+		if err != nil {
+			return i, err
+		}
+		if i == 0 {
+			return 0, nil
+		} else {
+			r.RequestLine = rl
+			r.State = 1
+			return i, nil
+		}
+	} else if r.State == 1 {
+		return 0, fmt.Errorf("error: trying to read data in state: Done")
+	} else {
+		return 0, fmt.Errorf("error: unknown state")
 	}
 }
