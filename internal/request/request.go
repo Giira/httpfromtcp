@@ -18,6 +18,19 @@ type RequestLine struct {
 }
 
 func RequestFromReader(reader io.Reader) (*Request, error) {
+	b := make([]byte, bufferSize)
+	bytesRead := 0
+	var r *Request
+	r = &Request{
+		State: 0,
+	}
+	for {
+		if r.State == 0 {
+			if bytesRead == len(b) {
+				bNew := make([]byte, (bytesRead * 2))
+			}
+		}
+	}
 	input, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("error reading from io reader: %v", err)
@@ -25,11 +38,6 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 	rl, b, err := parseRequestLine(input)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing request line: %v", err)
-	}
-	var r *Request
-	r = &Request{
-		RequestLine: rl,
-		State:       0,
 	}
 	return r, nil
 }
