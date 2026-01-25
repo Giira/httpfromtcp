@@ -28,7 +28,10 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 		if r.State == 0 {
 			if bytesRead == len(b) {
 				bNew := make([]byte, (bytesRead * 2))
+				copy(bNew, b)
+				b := bNew
 			}
+			input, err := io.Seek
 		}
 	}
 	input, err := io.ReadAll(reader)
