@@ -17,6 +17,8 @@ type RequestLine struct {
 	Method        string
 }
 
+const bufferSize = 2
+
 func RequestFromReader(reader io.Reader) (*Request, error) {
 	b := make([]byte, bufferSize)
 	bytesRead := 0
@@ -31,12 +33,17 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 				copy(bNew, b)
 				b := bNew
 			}
-			input, err := io.Seek
+			bytesRead, err := reader.Read(b[bytesRead:])
+			if err != nil {
+				if err == io.EOF {
+					if bytesRead != 0 {
+						return nil, fmt.Errorf("error: if err is EOF, no bytes should have been read")
+					}
+				}
+				return nil, err
+			}
+
 		}
-	}
-	input, err := io.ReadAll(reader)
-	if err != nil {
-		return nil, fmt.Errorf("error reading from io reader: %v", err)
 	}
 	rl, b, err := parseRequestLine(input)
 	if err != nil {
