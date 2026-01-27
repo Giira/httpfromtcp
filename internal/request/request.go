@@ -21,26 +21,35 @@ const bufferSize = 2
 
 func RequestFromReader(reader io.Reader) (*Request, error) {
 	b := make([]byte, bufferSize)
-	bytesRead := 0
+	readTo := 0
 	var r *Request
 	r = &Request{
 		State: 0,
 	}
 	for {
 		if r.State == 0 {
-			if bytesRead == len(b) {
-				bNew := make([]byte, (bytesRead * 2))
+			if readTo == len(b) {
+				bNew := make([]byte, (readTo * 2))
 				copy(bNew, b)
-				b := bNew
+				b = bNew
 			}
-			bytesRead, err := reader.Read(b[bytesRead:])
+			bytesRead, err := reader.Read(b[readTo:])
 			if err != nil {
 				if err == io.EOF {
 					if bytesRead != 0 {
-						return nil, fmt.Errorf("error: if err is EOF, no bytes should have been read")
+						return nil, fmt.Errorf("error: if err is EOF, no bytes should have been read: %v", err)
 					}
+					if r.State != 1 {
+						return nil, fmt.Errorf("error: Incomplete request: %v", err)
+					}
+					break
 				}
-				return nil, err
+				return nil, fmt.Errorf("error: failure to read from reader: %v", err)
+			}
+			readTo += bytesRead
+			parsedTo, err := r.parse(b[:readTo])
+			if err != nil {
+				return nil, fmt.Errorf("error: failure to parse")
 			}
 
 		}
