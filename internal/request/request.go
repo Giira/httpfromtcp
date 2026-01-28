@@ -51,12 +51,9 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 			if err != nil {
 				return nil, fmt.Errorf("error: failure to parse")
 			}
-
+			copy(b, b[parsedTo:])
+			readTo -= parsedTo
 		}
-	}
-	rl, b, err := parseRequestLine(input)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing request line: %v", err)
 	}
 	return r, nil
 }
@@ -91,8 +88,10 @@ func parseRequestLine(input []byte) (RequestLine, int, error) {
 	return rl, bytes, nil
 }
 
+// Returns number of bytes parsed
 func (r *Request) parse(data []byte) (int, error) {
-	if r.State == 0 {
+	switch r.State {
+	case 0:
 		rl, i, err := parseRequestLine(data)
 		if err != nil {
 			return i, err
@@ -104,9 +103,9 @@ func (r *Request) parse(data []byte) (int, error) {
 			r.State = 1
 			return i, nil
 		}
-	} else if r.State == 1 {
+	case 1:
 		return 0, fmt.Errorf("error: trying to read data in state: Done")
-	} else {
+	default:
 		return 0, fmt.Errorf("error: unknown state")
 	}
 }
