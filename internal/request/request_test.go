@@ -39,6 +39,7 @@ func TestRequestLineParse(t *testing.T) {
 		data:            "/coffee HTTP/1.1\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n",
 		numBytesPerRead: 5,
 	}
+	_, err = RequestFromReader(reader)
 	require.Error(t, err)
 
 	// Test: Good POST Request with path
@@ -69,6 +70,7 @@ func TestRequestLineParse(t *testing.T) {
 		data:            "GET /coffee HTTP/1.1\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n",
 		numBytesPerRead: 0,
 	}
+	_, err = RequestFromReader(reader)
 	require.Error(t, err)
 }
 
