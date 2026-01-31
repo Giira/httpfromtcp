@@ -3,6 +3,7 @@ package request
 import (
 	"fmt"
 	"io"
+	"log"
 	"strings"
 )
 
@@ -37,7 +38,7 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 			if err != nil {
 				if err == io.EOF {
 					if bytesRead != 0 {
-						return nil, fmt.Errorf("error: if err is EOF, no bytes should have been read: %v", err)
+						log.Fatalf("error: if err is EOF, no bytes should have been read: %v", err)
 					}
 					if r.State != 1 {
 						return nil, fmt.Errorf("error: Incomplete request: %v", err)
