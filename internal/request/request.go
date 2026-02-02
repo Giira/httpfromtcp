@@ -3,13 +3,12 @@ package request
 import (
 	"fmt"
 	"io"
-	"log"
 	"strings"
 )
 
 type Request struct {
 	RequestLine RequestLine
-	State       int
+	state       requestState
 }
 
 type RequestLine struct {
@@ -18,43 +17,46 @@ type RequestLine struct {
 	Method        string
 }
 
+type requestState int
+
+const (
+	rsInitialised requestState = iota
+	rsDone
+)
+
 const bufferSize = 2
 
 func RequestFromReader(reader io.Reader) (*Request, error) {
 	b := make([]byte, bufferSize)
 	readTo := 0
-	var r *Request
-	r = &Request{
-		State: 0,
+
+	r := &Request{
+		state: rsInitialised,
 	}
-	for {
-		if r.State == 0 {
-			if readTo == len(b) {
-				bNew := make([]byte, (readTo * 2))
-				copy(bNew, b)
-				b = bNew
-			}
-			bytesRead, err := reader.Read(b[readTo:])
-			if err != nil {
-				if err == io.EOF {
-					if bytesRead != 0 {
-						log.Fatalf("error: if err is EOF, no bytes should have been read: %v", err)
-					}
-					if r.State != 1 {
-						return nil, fmt.Errorf("error: Incomplete request: %v", err)
-					}
-					break
-				}
-				return nil, fmt.Errorf("error: failure to read from reader: %v", err)
-			}
-			readTo += bytesRead
-			parsedTo, err := r.parse(b[:readTo])
-			if err != nil {
-				return nil, fmt.Errorf("error: failure to parse")
-			}
-			copy(b, b[parsedTo:])
-			readTo -= parsedTo
+	for r.state != rsDone {
+		if readTo >= len(b) {
+			bNew := make([]byte, (len(b) * 2))
+			copy(bNew, b)
+			b = bNew
 		}
+		bytesRead, err := reader.Read(b[readTo:])
+		if err != nil {
+			if err == io.EOF {
+				r.state = rsDone
+				break
+			}
+			return nil, fmt.Errorf("error: failure to read from reader: %v", err)
+		}
+
+		readTo += bytesRead
+
+		parsedTo, err := r.parse(b[:readTo])
+		if err != nil {
+			return nil, fmt.Errorf("error: failure to parse")
+		}
+
+		copy(b, b[parsedTo:])
+		readTo -= parsedTo
 	}
 	return r, nil
 }
@@ -91,8 +93,8 @@ func parseRequestLine(input []byte) (RequestLine, int, error) {
 
 // Returns number of bytes parsed
 func (r *Request) parse(data []byte) (int, error) {
-	switch r.State {
-	case 0:
+	switch r.state {
+	case rsInitialised:
 		rl, i, err := parseRequestLine(data)
 		if err != nil {
 			return i, err
@@ -101,10 +103,10 @@ func (r *Request) parse(data []byte) (int, error) {
 			return 0, nil
 		} else {
 			r.RequestLine = rl
-			r.State = 1
+			r.state = rsDone
 			return i, nil
 		}
-	case 1:
+	case rsDone:
 		return 0, fmt.Errorf("error: trying to read data in state: Done")
 	default:
 		return 0, fmt.Errorf("error: unknown state")
