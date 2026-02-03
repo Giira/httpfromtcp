@@ -61,31 +61,32 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 	return r, nil
 }
 
-func parseRequestLine(input []byte) (RequestLine, int, error) {
+func parseRequestLine(input []byte) (*RequestLine, int, error) {
 	bytes := 0
 	lines := strings.Split(string(input), "\r\n")
 	if len(lines) == 1 {
-		return RequestLine{}, 0, nil
+		return nil, 0, nil
 	}
+
 	line := strings.Split(lines[0], " ")
 	if len(line) != 3 {
-		return RequestLine{}, bytes, fmt.Errorf("error: request line should always have 3 parts, not %v", len(line))
+		return nil, bytes, fmt.Errorf("error: request line should always have 3 parts, not %v", len(line))
 	}
 	version := strings.Split(line[2], "/")
-	rl := RequestLine{
+	rl := &RequestLine{
 		HttpVersion:   version[1],
 		RequestTarget: line[1],
 		Method:        line[0],
 	}
 	if version[0] != "HTTP" || version[1] != "1.1" {
-		return RequestLine{}, bytes, fmt.Errorf("error: unrecognised http version")
+		return nil, bytes, fmt.Errorf("error: unrecognised http version")
 	}
 	if strings.ToUpper(rl.Method) != rl.Method {
-		return RequestLine{}, bytes, fmt.Errorf("error: method not correctly formatted")
+		return nil, bytes, fmt.Errorf("error: method not correctly formatted")
 	}
 	for _, char := range rl.Method {
 		if char < 'A' || char > 'Z' {
-			return RequestLine{}, bytes, fmt.Errorf("error: method contains non alphanumeric characters")
+			return nil, bytes, fmt.Errorf("error: method contains non alphanumeric characters")
 		}
 	}
 	return rl, bytes, nil
@@ -102,7 +103,7 @@ func (r *Request) parse(data []byte) (int, error) {
 		if i == 0 {
 			return 0, nil
 		} else {
-			r.RequestLine = rl
+			r.RequestLine = *rl
 			r.state = rsDone
 			return i, nil
 		}
