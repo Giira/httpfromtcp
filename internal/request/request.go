@@ -89,6 +89,7 @@ func parseRequestLine(input []byte) (*RequestLine, int, error) {
 			return nil, bytes, fmt.Errorf("error: method contains non alphanumeric characters")
 		}
 	}
+	// fix bytes return - this is the problem
 	return rl, bytes, nil
 }
 

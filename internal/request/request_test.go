@@ -2,7 +2,6 @@ package request
 
 import (
 	"io"
-	"strings"
 	"testing"
 
 	"github.com/magiconair/properties/assert"
@@ -39,11 +38,15 @@ func TestRequestLineParse(t *testing.T) {
 		data:            "/coffee HTTP/1.1\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n",
 		numBytesPerRead: 5,
 	}
-	_, err = RequestFromReader(reader)
+	r, err = RequestFromReader(reader)
 	require.Error(t, err)
 
 	// Test: Good POST Request with path
-	r, err = RequestFromReader(strings.NewReader("POST /cafe HTTP/1.1\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n"))
+	reader = &chunkReader{
+		data:            "POST /cafe HTTP/1.1\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n",
+		numBytesPerRead: 5,
+	}
+	r, err = RequestFromReader(reader)
 	require.NoError(t, err)
 	require.NotNil(t, r)
 	assert.Equal(t, "POST", r.RequestLine.Method)
@@ -51,18 +54,34 @@ func TestRequestLineParse(t *testing.T) {
 	assert.Equal(t, "1.1", r.RequestLine.HttpVersion)
 
 	// Test: Incorrect Method format
-	_, err = RequestFromReader(strings.NewReader("PoST /cafe HTTP/1.1\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n"))
+	reader = &chunkReader{
+		data:            "PoST /cafe HTTP/1.1\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n",
+		numBytesPerRead: 5,
+	}
+	r, err = RequestFromReader(reader)
 	require.Error(t, err)
 
 	// Test: Non alphanumeric method
-	_, err = RequestFromReader(strings.NewReader("P0ST /cafe HTTP/1.1\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n"))
+	reader = &chunkReader{
+		data:            "P0ST /cafe HTTP/1.1\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n",
+		numBytesPerRead: 5,
+	}
+	r, err = RequestFromReader(reader)
 	require.Error(t, err)
 
 	// Test: Incorrect HTTP version
-	_, err = RequestFromReader(strings.NewReader("POST /cafe UDP/1.1\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n"))
+	reader = &chunkReader{
+		data:            "POST /cafe UDP/1.1\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n",
+		numBytesPerRead: 5,
+	}
+	r, err = RequestFromReader(reader)
 	require.Error(t, err)
 
-	_, err = RequestFromReader(strings.NewReader("POST /cafe HTTP/1.2\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n"))
+	reader = &chunkReader{
+		data:            "POST /cafe HTTP/1.2\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n",
+		numBytesPerRead: 5,
+	}
+	r, err = RequestFromReader(reader)
 	require.Error(t, err)
 }
 
