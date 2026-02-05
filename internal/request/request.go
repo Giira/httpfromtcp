@@ -68,29 +68,37 @@ func parseRequestLine(input []byte) (*RequestLine, int, error) {
 		return nil, 0, nil
 	}
 
-	line := strings.Split(lines[0], " ")
-	if len(line) != 3 {
-		return nil, bytes, fmt.Errorf("error: request line should always have 3 parts, not %v", len(line))
-	}
-	version := strings.Split(line[2], "/")
-	rl := &RequestLine{
-		HttpVersion:   version[1],
-		RequestTarget: line[1],
-		Method:        line[0],
-	}
-	if version[0] != "HTTP" || version[1] != "1.1" {
-		return nil, bytes, fmt.Errorf("error: unrecognised http version")
-	}
-	if strings.ToUpper(rl.Method) != rl.Method {
-		return nil, bytes, fmt.Errorf("error: method not correctly formatted")
-	}
-	for _, char := range rl.Method {
-		if char < 'A' || char > 'Z' {
-			return nil, bytes, fmt.Errorf("error: method contains non alphanumeric characters")
-		}
-	}
 	// fix bytes return - this is the problem
 	return rl, bytes, nil
+}
+
+func parseString(str string) (*RequestLine, error) {
+	sections := strings.Split(str, " ")
+	if len(sections) != 3 {
+		return nil, fmt.Errorf("error: request line should always have 3 parts, not %v - %v", len(sections), sections)
+	}
+
+	version := strings.Split(sections[2], "/")
+	if version[0] != "HTTP" || version[1] != "1.1" {
+		return nil, fmt.Errorf("error: unrecognised http version: %v", sections[2])
+	}
+
+	target := sections[1]
+
+	method := sections[0]
+	for _, char := range method {
+		if char < 'A' || char > 'Z' {
+			return nil, fmt.Errorf("error: method should be upper case letters only: %v", method)
+		}
+	}
+
+	rl := &RequestLine{
+		HttpVersion:   version[1],
+		RequestTarget: target,
+		Method:        method,
+	}
+
+	return rl, nil
 }
 
 // Returns number of bytes parsed
