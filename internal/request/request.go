@@ -62,14 +62,16 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 }
 
 func parseRequestLine(input []byte) (*RequestLine, int, error) {
-	bytes := 0
 	lines := strings.Split(string(input), "\r\n")
 	if len(lines) == 1 {
 		return nil, 0, nil
 	}
-
-	// fix bytes return - this is the problem
-	return rl, bytes, nil
+	text := string(lines[0])
+	rl, err := parseString(text)
+	if err != nil {
+		return nil, 0, err
+	}
+	return rl, len(text) + 2, nil
 }
 
 func parseString(str string) (*RequestLine, error) {
