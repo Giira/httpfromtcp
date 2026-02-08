@@ -26,6 +26,13 @@ const (
 
 const bufferSize = 2
 
+func PrintRequestLine(req *Request) {
+	fmt.Println("Request line:")
+	fmt.Printf("- Method: %v\n", req.RequestLine.Method)
+	fmt.Printf("- Target: %v\n", req.RequestLine.RequestTarget)
+	fmt.Printf("- Version: %v\n", req.RequestLine.HttpVersion)
+}
+
 func RequestFromReader(reader io.Reader) (*Request, error) {
 	b := make([]byte, bufferSize)
 	readTo := 0

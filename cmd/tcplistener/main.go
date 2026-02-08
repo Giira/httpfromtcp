@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"httpfromtcp/internal/request"
 	"log"
 	"net"
 )
@@ -19,8 +20,7 @@ func main() {
 			log.Fatalf("error accepting connection: %v", err)
 		}
 		fmt.Println("Connection accepted")
-		for line := range getLinesChannel(con) {
-			fmt.Println(line)
-		}
+		req, err := request.RequestFromReader(con)
+		request.PrintRequestLine(req)
 	}
 }
