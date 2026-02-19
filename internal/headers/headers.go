@@ -17,6 +17,8 @@ func (h Headers) Parse(data []byte) (n int, done bool, err error) {
 		return 2, true, nil
 	default:
 		parts := bytes.SplitN(data[:idx], []byte(":"), 2)
+		h[string(parts[0])] = string(parts[1])
+		return len(parts) + 2, true, nil
 	}
 
 }
