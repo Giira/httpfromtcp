@@ -35,12 +35,4 @@ func Test_Headers_Parse(t *testing.T) {
 	assert.Equal(t, "localhost:42069", headers["Host"])
 	assert.Equal(t, 23, n)
 	assert.False(t, done)
-
-	// Test: Valid 2 headers with existing headers
-	headers = NewHeaders()
-	data = []byte("")
-
-	// Test: Valid done
-	headers = NewHeaders()
-	data = []byte("")
 }

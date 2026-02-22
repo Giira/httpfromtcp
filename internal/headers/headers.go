@@ -32,7 +32,7 @@ func (h Headers) Parse(data []byte) (n int, done bool, err error) {
 		}
 		field_value := strings.TrimSpace(string(parts[1]))
 		h[field_name] = field_value
-		return len(field_name) + len(field_value) + 2, true, nil
+		return len(field_name) + len(field_value) + 4, false, nil
 	}
 
 }
