@@ -24,15 +24,14 @@ func (h Headers) Parse(data []byte) (n int, done bool, err error) {
 		}
 
 		field_name := string(parts[0])
-		if field_name[0] == ' ' {
-			return 0, false, fmt.Errorf("error: incorrect header format - leading space: %v", field_name)
+		if field_name != strings.TrimRight(field_name, " ") {
+			return 0, false, fmt.Errorf("error: invalid header format - space before colon: %v", field_name)
 		}
-		if strings.Contains(field_name, " :") {
-			return 0, false, fmt.Errorf("error: incorrect header format - space before colon: %v", field_name)
-		}
+		field_name = strings.TrimSpace(field_name)
+
 		field_value := strings.TrimSpace(string(parts[1]))
 		h[field_name] = field_value
-		return len(field_name) + len(field_value) + 4, false, nil
+		return idx + 2, false, nil
 	}
 
 }
