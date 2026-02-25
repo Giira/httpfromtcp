@@ -34,9 +34,15 @@ func (h Headers) Parse(data []byte) (n int, done bool, err error) {
 			return 0, false, fmt.Errorf("error: invalid character in header field_name: %v", field_name)
 		}
 		field_name = strings.ToLower(field_name)
-
 		field_value := strings.TrimSpace(string(parts[1]))
-		h[field_name] = field_value
+
+		value, ok := h[field_name]
+		if ok {
+			value += ", " + field_value
+			h[field_name] = value
+		} else {
+			h[field_name] = field_value
+		}
 		return idx + 2, false, nil
 	}
 

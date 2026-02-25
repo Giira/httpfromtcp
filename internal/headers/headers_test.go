@@ -57,11 +57,21 @@ func Test_Headers_Parse(t *testing.T) {
 	assert.Equal(t, 2, n)
 	assert.True(t, done)
 
-	// Test: Invalid character in header Field_Name
+	// Test: Invalid character in header field-name
 	headers = NewHeaders()
 	data = []byte("H©st: localhost:42069\r\n\r\n")
 	n, done, err = headers.Parse(data)
 	require.Error(t, err)
 	assert.Equal(t, 0, n)
+	assert.False(t, done)
+
+	// Test: Valid two headers one field-name
+	headers = map[string]string{"set-person": "minion_one"}
+	data = []byte("Set-Person: minion_two\r\n\r\n")
+	n, done, err = headers.Parse(data)
+	require.NoError(t, err)
+	require.NotNil(t, headers)
+	assert.Equal(t, "minion_one, minion_two", headers["set-person"])
+	assert.Equal(t, 24, n)
 	assert.False(t, done)
 }
