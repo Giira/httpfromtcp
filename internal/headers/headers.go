@@ -3,6 +3,7 @@ package headers
 import (
 	"bytes"
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -20,7 +21,7 @@ func (h Headers) Parse(data []byte) (n int, done bool, err error) {
 	default:
 		parts := bytes.SplitN(data[:idx], []byte(":"), 2)
 		if len(parts) != 2 {
-			return 0, false, fmt.Errorf("error: parts hould only have 2 fields: %v", parts)
+			return 0, false, fmt.Errorf("error: parts should only have 2 fields: %v", parts)
 		}
 
 		field_name := string(parts[0])
@@ -28,12 +29,32 @@ func (h Headers) Parse(data []byte) (n int, done bool, err error) {
 			return 0, false, fmt.Errorf("error: invalid header format - space before colon: %v", field_name)
 		}
 		field_name = strings.TrimSpace(field_name)
+		ok := checkChars(field_name)
+		if !ok {
+			return 0, false, fmt.Errorf("error: invalid character in header field_name: %v", field_name)
+		}
+		field_name = strings.ToLower(field_name)
 
 		field_value := strings.TrimSpace(string(parts[1]))
 		h[field_name] = field_value
 		return idx + 2, false, nil
 	}
 
+}
+
+func checkChars(text string) bool {
+	spec := strings.Split("!#$%&'*+-.^_`|~", "")
+	for _, char := range text {
+		if ('A' <= char && char <= 'Z') ||
+			('a' <= char && char <= 'z') ||
+			('0' <= char && char <= '9') ||
+			slices.Contains(spec, string(char)) {
+			continue
+		} else {
+			return false
+		}
+	}
+	return true
 }
 
 func NewHeaders() Headers {
