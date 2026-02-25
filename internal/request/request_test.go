@@ -139,7 +139,14 @@ func TestHeaderRlParsing(t *testing.T) {
 	assert.Equal(t, "*/*", r.Headers["accept"])
 
 	// Test: Missing end of Headers
-
+	reader = &chunkReader{
+		data:            "GET / HTTP/1.1\r\nHost: localhost:42069",
+		numBytesPerRead: 3,
+	}
+	r, err = RequestFromReader(reader)
+	require.NoError(t, err)
+	require.NotNil(t, r)
+	assert.Empty(t, r.Headers)
 }
 
 type chunkReader struct {

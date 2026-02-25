@@ -36,6 +36,13 @@ func PrintRequestLine(req *Request) {
 	fmt.Printf("- Version: %v\n", req.RequestLine.HttpVersion)
 }
 
+func PrintHeaders(req *Request) {
+	fmt.Println("Headers:")
+	for key, value := range req.Headers {
+		fmt.Printf("- %v: %v\n", key, value)
+	}
+}
+
 func RequestFromReader(reader io.Reader) (*Request, error) {
 	b := make([]byte, bufferSize)
 	readTo := 0
