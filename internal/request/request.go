@@ -10,9 +10,11 @@ import (
 
 type Request struct {
 	RequestLine RequestLine
-	state       requestState
 	Headers     headers.Headers
 	Body        []byte
+
+	state   requestState
+	bodyLen int
 }
 
 type RequestLine struct {
@@ -53,6 +55,7 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 	r := &Request{
 		state:   rsInitialised,
 		Headers: headers.NewHeaders(),
+		Body:    make([]byte, 0),
 	}
 	for r.state != rsDone {
 		if readTo >= len(b) {
@@ -63,7 +66,9 @@ func RequestFromReader(reader io.Reader) (*Request, error) {
 		bytesRead, err := reader.Read(b[readTo:])
 		if err != nil {
 			if err == io.EOF {
-				r.state = rsDone
+				if r.state != rsDone {
+					return nil, fmt.Errorf("error: incomplete request")
+				}
 				break
 			}
 			return nil, fmt.Errorf("error: failure to read from reader: %v", err)
@@ -129,43 +134,44 @@ func (r *Request) parseSingle(data []byte) (int, error) {
 	case rsInitialised:
 		rl, i, err := parseRequestLine(data)
 		if err != nil {
-			return i, err
+			return 0, err
 		}
 		if i == 0 {
 			return 0, nil
-		} else {
-			r.RequestLine = *rl
-			r.state = rsParsingHeaders
-			return i, nil
 		}
+		r.RequestLine = *rl
+		r.state = rsParsingHeaders
+		return i, nil
 	case rsParsingHeaders:
 		i, done, err := r.Headers.Parse(data)
 		if err != nil {
-			return i, err
+			return 0, err
 		}
 		if done {
 			r.state = rsParsingBody
-			return i, nil
 		}
 		return i, nil
 	case rsParsingBody:
 		cLength, ok := r.Headers.Get("Content-Length")
 		if !ok {
 			r.state = rsDone
+			return len(data), nil
 		}
-		r.Body = append(r.Body, data)
 
 		cLengthI, err := strconv.Atoi(cLength)
 		if err != nil {
 			return 0, err
 		}
-		if len(r.Body) > cLengthI {
+		r.Body = append(r.Body, data...)
+		r.bodyLen += len(data)
+
+		if r.bodyLen > cLengthI {
 			return 0, fmt.Errorf("error: body exceeds content length")
 		}
-		if len(r.Body) == cLengthI {
+		if r.bodyLen == cLengthI {
 			r.state = rsDone
-			return len(data), nil
 		}
+		return len(data), nil
 	case rsDone:
 		return 0, fmt.Errorf("error: trying to read data in state: Done")
 	default:

@@ -108,7 +108,7 @@ func TestHeaderParsing(t *testing.T) {
 
 	// Test: Empty Headers
 	reader = &chunkReader{
-		data:            "GET / HTTP/1.1\r\nThis is no header",
+		data:            "GET / HTTP/1.1\r\n\r\n",
 		numBytesPerRead: 3,
 	}
 	r, err = RequestFromReader(reader)
@@ -118,7 +118,7 @@ func TestHeaderParsing(t *testing.T) {
 
 	// Test: Duplicate Headers
 	reader = &chunkReader{
-		data:            "GET / HTTP/1.1\r\nHost: localhost:42069\r\nHost: grass:8080\r\n",
+		data:            "GET / HTTP/1.1\r\nHost: localhost:42069\r\nHost: grass:8080\r\n\r\n",
 		numBytesPerRead: 3,
 	}
 	r, err = RequestFromReader(reader)
@@ -144,9 +144,7 @@ func TestHeaderParsing(t *testing.T) {
 		numBytesPerRead: 3,
 	}
 	r, err = RequestFromReader(reader)
-	require.NoError(t, err)
-	require.NotNil(t, r)
-	assert.Empty(t, r.Headers)
+	require.Error(t, err)
 }
 
 func TestBodyParsing(t *testing.T) {
