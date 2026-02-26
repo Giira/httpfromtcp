@@ -48,6 +48,12 @@ func (h Headers) Parse(data []byte) (n int, done bool, err error) {
 
 }
 
+func (h Headers) Get(key string) (string, bool) {
+	key = strings.ToLower(key)
+	out, ok := h[key]
+	return out, ok
+}
+
 func checkChars(text string) bool {
 	spec := strings.Split("!#$%&'*+-.^_`|~", "")
 	for _, char := range text {
