@@ -34,18 +34,17 @@ const (
 
 const bufferSize = 2
 
-func PrintRequestLine(req *Request) {
+func PrintData(req *Request) {
 	fmt.Println("Request line:")
 	fmt.Printf("- Method: %v\n", req.RequestLine.Method)
 	fmt.Printf("- Target: %v\n", req.RequestLine.RequestTarget)
 	fmt.Printf("- Version: %v\n", req.RequestLine.HttpVersion)
-}
-
-func PrintHeaders(req *Request) {
 	fmt.Println("Headers:")
 	for key, value := range req.Headers {
 		fmt.Printf("- %v: %v\n", key, value)
 	}
+	fmt.Println("Body:")
+	fmt.Printf("%v\n", string(req.Body))
 }
 
 func RequestFromReader(reader io.Reader) (*Request, error) {

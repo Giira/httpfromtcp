@@ -21,7 +21,6 @@ func main() {
 		}
 		fmt.Println("Connection accepted")
 		req, err := request.RequestFromReader(con)
-		request.PrintRequestLine(req)
-		request.PrintHeaders(req)
+		request.PrintData(req)
 	}
 }
