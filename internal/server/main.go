@@ -49,10 +49,16 @@ func (s *Server) listen() {
 }
 
 func (s *Server) handle(conn net.Conn) {
+	defer conn.Close()
 	req, err := request.RequestFromReader(conn)
 	if err != nil {
 		log.Fatalf("error parsing request: %v", err)
 	}
+	out := "HTTP/1.1 200 OK\r\n" +
+		"Content-Type: text/plain\r\n" +
+		"Content-Length: 13\r\n\r\n" +
+		"Hello World!\n"
+	conn.Write([]byte(out))
 	request.PrintData(req)
 	conn.Close()
 }
