@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"httpfromtcp/internal/request"
 	"log"
 	"net"
 	"sync/atomic"
@@ -10,7 +9,7 @@ import (
 
 type Server struct {
 	listener net.Listener
-	state    atomic.Bool
+	closed   atomic.Bool
 }
 
 func Serve(port int) (*Server, error) {
@@ -26,11 +25,10 @@ func Serve(port int) (*Server, error) {
 }
 
 func (s *Server) Close() error {
-	err := s.listener.Close()
-	if err != nil {
-		return err
+	s.closed.Store(true)
+	if s.listener != nil {
+		return s.listener.Close()
 	}
-	s.state.Store(false)
 	return nil
 }
 
@@ -38,7 +36,7 @@ func (s *Server) listen() {
 	for {
 		con, err := s.listener.Accept()
 		if err != nil {
-			if s.state.Load() {
+			if s.closed.Load() {
 				return
 			}
 			log.Printf("Failed to accept connection: %v", err)
@@ -50,15 +48,11 @@ func (s *Server) listen() {
 
 func (s *Server) handle(conn net.Conn) {
 	defer conn.Close()
-	req, err := request.RequestFromReader(conn)
-	if err != nil {
-		log.Fatalf("error parsing request: %v", err)
-	}
 	out := "HTTP/1.1 200 OK\r\n" +
 		"Content-Type: text/plain\r\n" +
-		"Content-Length: 13\r\n\r\n" +
+		"Content-Length: 13\r\n" +
+		"\r\n" +
 		"Hello World!\n"
 	conn.Write([]byte(out))
-	request.PrintData(req)
-	conn.Close()
+	return
 }
