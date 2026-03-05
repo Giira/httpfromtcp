@@ -50,7 +50,6 @@ func (s *Server) handle(conn net.Conn) {
 	defer conn.Close()
 	out := "HTTP/1.1 200 OK\r\n" +
 		"Content-Type: text/plain\r\n" +
-		"Content-Length: 13\r\n" +
 		"\r\n" +
 		"Hello World!\n"
 	conn.Write([]byte(out))
