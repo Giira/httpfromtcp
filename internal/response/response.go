@@ -27,6 +27,7 @@ func WriteStatusLine(w io.Writer, statusCode StatusCode) error {
 		out := fmt.Sprintf("HTTP/1.1 %v", statusCode)
 		w.Write([]byte(out))
 	}
+	return nil
 }
 
 func GetDefaultHeaders(contentLen int) headers.Headers {
@@ -38,8 +39,12 @@ func GetDefaultHeaders(contentLen int) headers.Headers {
 }
 
 func WriteHeaders(w io.Writer, headers headers.Headers) error {
-	_, err := w.Write([]byte(headers))
-	if err != nil {
-		return fmt.Errorf("error: failed to write headers: %v", err)
+	for header := range headers {
+		out := fmt.Sprintf("%v: %v", header, headers[header])
+		_, err := w.Write([]byte(out))
+		if err != nil {
+			return fmt.Errorf("error: failed to write headers: %v", err)
+		}
 	}
+	return nil
 }
