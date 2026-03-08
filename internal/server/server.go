@@ -50,7 +50,7 @@ func (s *Server) listen() {
 func (s *Server) handle(conn net.Conn) {
 	defer conn.Close()
 	h := response.GetDefaultHeaders(0)
-	response.WriteStatusLine(conn, 0)
+	response.WriteStatusLine(conn, 200)
 	response.WriteHeaders(conn, h)
 	return
 }

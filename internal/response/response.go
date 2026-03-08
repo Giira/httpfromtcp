@@ -10,18 +10,18 @@ import (
 type StatusCode int
 
 const (
-	code200 StatusCode = iota
-	code400
-	code500
+	codeOK          StatusCode = 200
+	codeBadRequest  StatusCode = 400
+	codeServerError StatusCode = 500
 )
 
 func WriteStatusLine(w io.Writer, statusCode StatusCode) error {
 	switch statusCode {
-	case code200:
+	case 200:
 		w.Write([]byte("HTTP/1.1 200 OK"))
-	case code400:
+	case 400:
 		w.Write([]byte("HTTP/1.1 400 Bad Request"))
-	case code500:
+	case 500:
 		w.Write([]byte("HTTP/1.1 500 Internal Server Error"))
 	default:
 		out := fmt.Sprintf("HTTP/1.1 %v", statusCode)
