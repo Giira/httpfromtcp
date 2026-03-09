@@ -70,5 +70,5 @@ func checkChars(text string) bool {
 }
 
 func NewHeaders() Headers {
-	return Headers{}
+	return map[string]string{}
 }

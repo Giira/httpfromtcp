@@ -49,8 +49,11 @@ func (s *Server) listen() {
 
 func (s *Server) handle(conn net.Conn) {
 	defer conn.Close()
+	err := response.WriteStatusLine(conn, response.CodeOK)
+	if err != nil {
+		log.Printf("%v", err)
+	}
 	h := response.GetDefaultHeaders(0)
-	response.WriteStatusLine(conn, 200)
 	response.WriteHeaders(conn, h)
-	return
+	conn.Write([]byte("\r\n"))
 }
