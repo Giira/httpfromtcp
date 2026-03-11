@@ -2,7 +2,9 @@ package server
 
 import (
 	"fmt"
+	"httpfromtcp/internal/request"
 	"httpfromtcp/internal/response"
+	"io"
 	"log"
 	"net"
 	"sync/atomic"
@@ -13,13 +15,20 @@ type Server struct {
 	closed   atomic.Bool
 }
 
-func Serve(port int) (*Server, error) {
-	f, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+type Handler func(w io.Writer, req *request.Request) *HandlerError
+
+type HandlerError struct {
+	StatusCode int
+	Message    string
+}
+
+func Serve(port int, f Handler) (*Server, error) {
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return nil, fmt.Errorf("error listening on port: %v - %v", port, err)
 	}
 	s := &Server{
-		listener: f,
+		listener: listener,
 	}
 	go s.listen()
 	return s, nil
