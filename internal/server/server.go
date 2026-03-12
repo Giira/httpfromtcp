@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"fmt"
 	"httpfromtcp/internal/request"
 	"httpfromtcp/internal/response"
@@ -68,4 +69,20 @@ func (s *Server) handle(conn net.Conn) {
 		log.Printf("error: failed to write headers properly: %v", err)
 	}
 	conn.Write([]byte("\r\n"))
+
+	req, err := request.RequestFromReader(conn)
+	if err != nil {
+
+	}
+	b := bytes.NewBuffer([]byte(""))
+	hErr := Handler(conn, req)
+	if !hErr.StatusCode == 200 {
+		conn.Write(hErr.Message)
+	} else {
+		h := response.GetDefaultHeaders(0)
+		err = response.WriteStatusLine(conn, response.CodeOK)
+		err = response.WriteHeaders(conn, h)
+
+	}
+
 }
