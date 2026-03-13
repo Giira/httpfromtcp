@@ -16,11 +16,15 @@ type Server struct {
 	closed   atomic.Bool
 }
 
-type Handler func(w io.Writer, req *request.Request) *HandlerError
+type Handler func(w io.Writer, req *request.Request) HandlerError
 
 type HandlerError struct {
 	StatusCode int
 	Message    string
+}
+
+type WriteError func(w io.Writer, h HandlerError) {
+	response.WriteStatusLine(w, response.StatusCode)
 }
 
 func Serve(port int, f Handler) (*Server, error) {
@@ -69,6 +73,8 @@ func (s *Server) handle(conn net.Conn) {
 		log.Printf("error: failed to write headers properly: %v", err)
 	}
 	conn.Write([]byte("\r\n"))
+
+
 
 	req, err := request.RequestFromReader(conn)
 	if err != nil {
