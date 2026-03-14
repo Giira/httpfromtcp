@@ -23,8 +23,11 @@ type HandlerError struct {
 	Message    string
 }
 
-type WriteError func(w io.Writer, h HandlerError) {
-	response.WriteStatusLine(w, response.StatusCode)
+func WriteError(w io.Writer, h HandlerError) {
+	response.WriteStatusLine(w, response.StatusCode(h.StatusCode))
+	headers := response.GetDefaultHeaders(len(h.Message))
+	response.WriteHeaders(w, headers)
+	w.Write([]byte(h.Message))
 }
 
 func Serve(port int, f Handler) (*Server, error) {
@@ -61,34 +64,26 @@ func (s *Server) listen() {
 	}
 }
 
-func (s *Server) handle(conn net.Conn) {
+func (s *Server) handle(conn net.Conn, f Handler) {
 	defer conn.Close()
-	err := response.WriteStatusLine(conn, response.CodeOK)
-	if err != nil {
-		log.Printf("%v", err)
-	}
-	h := response.GetDefaultHeaders(0)
-	err = response.WriteHeaders(conn, h)
-	if err != nil {
-		log.Printf("error: failed to write headers properly: %v", err)
-	}
-	conn.Write([]byte("\r\n"))
-
-
-
 	req, err := request.RequestFromReader(conn)
 	if err != nil {
-
+		log.Printf("error: failed to get request from reader: %v", err)
 	}
-	b := bytes.NewBuffer([]byte(""))
-	hErr := Handler(conn, req)
-	if !hErr.StatusCode == 200 {
-		conn.Write(hErr.Message)
+	b := bytes.Buffer{}
+	hErr := f(&b, req)
+	if hErr.Message != "" {
+		WriteError(conn, hErr)
+		return
 	} else {
-		h := response.GetDefaultHeaders(0)
+		h := response.GetDefaultHeaders(len(b.Bytes()))
 		err = response.WriteStatusLine(conn, response.CodeOK)
 		err = response.WriteHeaders(conn, h)
-
+		if err != nil {
+			log.Printf("error: failed to write headers properly: %v", err)
+		}
+		conn.Write(b.Bytes())
+		return
 	}
 
 }
