@@ -38,7 +38,7 @@ func Serve(port int, f Handler) (*Server, error) {
 	s := &Server{
 		listener: listener,
 	}
-	go s.listen()
+	go s.listen(f)
 	return s, nil
 }
 
@@ -50,7 +50,7 @@ func (s *Server) Close() error {
 	return nil
 }
 
-func (s *Server) listen() {
+func (s *Server) listen(f Handler) {
 	for {
 		con, err := s.listener.Accept()
 		if err != nil {
@@ -60,7 +60,7 @@ func (s *Server) listen() {
 			log.Printf("Failed to accept connection: %v", err)
 			continue
 		}
-		go s.handle(con)
+		go s.handle(con, f)
 	}
 }
 
