@@ -14,7 +14,20 @@ const (
 	CodeServerError StatusCode = 500
 )
 
-func WriteStatusLine(w io.Writer, statusCode StatusCode) error {
+type WriterState int
+
+const (
+	WriteSL WriterState = iota
+	WriteH
+	WriteB
+)
+
+type Writer struct {
+	State  WriterState
+	Writer io.Writer
+}
+
+func (w *Writer) WriteStatusLine(statusCode StatusCode) error {
 	var err error
 	switch statusCode {
 	case 200:
@@ -41,7 +54,7 @@ func GetDefaultHeaders(contentLen int) headers.Headers {
 	return out
 }
 
-func WriteHeaders(w io.Writer, headers headers.Headers) error {
+func (w *Writer) WriteHeaders(headers headers.Headers) error {
 	out := []byte{}
 	for k, v := range headers {
 		out = fmt.Appendf(out, "%v: %v\r\n", k, v)
@@ -50,3 +63,5 @@ func WriteHeaders(w io.Writer, headers headers.Headers) error {
 	_, err := w.Write(out)
 	return err
 }
+
+func (w *Writer) WriteBody(p []byte) (int, error)
