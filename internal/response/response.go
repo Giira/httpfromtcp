@@ -31,14 +31,14 @@ func (w *Writer) WriteStatusLine(statusCode StatusCode) error {
 	var err error
 	switch statusCode {
 	case 200:
-		_, err = w.Write([]byte("HTTP/1.1 200 OK"))
+		_, err = w.Writer.Write([]byte("HTTP/1.1 200 OK"))
 	case 400:
-		_, err = w.Write([]byte("HTTP/1.1 400 Bad Request"))
+		_, err = w.Writer.Write([]byte("HTTP/1.1 400 Bad Request"))
 	case 500:
-		_, err = w.Write([]byte("HTTP/1.1 500 Internal Server Error"))
+		_, err = w.Writer.Write([]byte("HTTP/1.1 500 Internal Server Error"))
 	default:
 		out := fmt.Sprintf("HTTP/1.1 %v", statusCode)
-		_, err = w.Write([]byte(out))
+		_, err = w.Writer.Write([]byte(out))
 	}
 	if err != nil {
 		return fmt.Errorf("error: failed to write statusline: %v", err)
@@ -60,8 +60,10 @@ func (w *Writer) WriteHeaders(headers headers.Headers) error {
 		out = fmt.Appendf(out, "%v: %v\r\n", k, v)
 	}
 	out = append(out, []byte("\r\n")...)
-	_, err := w.Write(out)
+	_, err := w.Writer.Write(out)
 	return err
 }
 
-func (w *Writer) WriteBody(p []byte) (int, error)
+func (w *Writer) WriteBody(p []byte) (int, error) {
+
+}

@@ -32,7 +32,15 @@ func handler(w io.Writer, req *request.Request) server.HandlerError {
 	case "/yourproblem":
 		return server.HandlerError{
 			StatusCode: 400,
-			Message:    "Your problem is not my problem\n",
+			Message:    "<html>
+						<head>
+							<title>400 Bad Request</title>
+						</head>
+						<body>
+							<h1>Bad Request</h1>
+							<p>Your request honestly kinda sucked.</p>
+						</body>
+						</html>",
 		}
 	case "/myproblem":
 		return server.HandlerError{
