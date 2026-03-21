@@ -50,7 +50,7 @@ func GetDefaultHeaders(contentLen int) headers.Headers {
 	out := headers.NewHeaders()
 	out["Content-Length"] = fmt.Sprintf("%d", contentLen)
 	out["Connection"] = "close"
-	out["Content-Type"] = "text/html"
+	out["Content-Type"] = "text/plain"
 	return out
 }
 
@@ -65,5 +65,7 @@ func (w *Writer) WriteHeaders(headers headers.Headers) error {
 }
 
 func (w *Writer) WriteBody(p []byte) (int, error) {
-
+	if w.State != WriteB {
+		return 0, fmt.Errorf("error: incorrect writer state for body writing: %v", w.State)
+	}
 }
