@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"httpfromtcp/internal/request"
 	"httpfromtcp/internal/response"
-	"io"
 	"log"
 	"net"
 	"sync/atomic"
@@ -16,18 +15,18 @@ type Server struct {
 	closed   atomic.Bool
 }
 
-type Handler func(w io.Writer, req *request.Request) HandlerError
+type Handler func(w *response.Writer, req *request.Request) HandlerError
 
 type HandlerError struct {
 	StatusCode int
 	Message    string
 }
 
-func WriteError(w io.Writer, h HandlerError) {
-	response.WriteStatusLine(w, response.StatusCode(h.StatusCode))
+func WriteError(w *response.Writer, h HandlerError) {
+	w.WriteStatusLine(response.StatusCode(h.StatusCode))
 	headers := response.GetDefaultHeaders(len(h.Message))
-	response.WriteHeaders(w, headers)
-	w.Write([]byte(h.Message))
+	w.WriteHeaders(headers)
+	w.conn.Write([]byte(h.Message))
 }
 
 func Serve(port int, f Handler) (*Server, error) {

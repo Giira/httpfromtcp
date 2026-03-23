@@ -96,4 +96,12 @@ func (w *Writer) WriteBody(p []byte) (int, error) {
 	if w.state != WriterHeadersDone {
 		return 0, fmt.Errorf("error: incorrect writer state for body writing: %v", w.state)
 	}
+
+	n, err := w.conn.Write(p)
+	if err != nil {
+		return 0, fmt.Errorf("error: failed to write body to connection: %v", err)
+	}
+
+	w.state = WriterBodyDone
+	return n, nil
 }

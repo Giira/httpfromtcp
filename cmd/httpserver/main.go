@@ -2,8 +2,8 @@ package main
 
 import (
 	"httpfromtcp/internal/request"
+	"httpfromtcp/internal/response"
 	"httpfromtcp/internal/server"
-	"io"
 	"log"
 	"os"
 	"os/signal"
@@ -26,7 +26,7 @@ func main() {
 	log.Println("Server gracefully stopped")
 }
 
-func handler(w io.Writer, req *request.Request) server.HandlerError {
+func handler(w *response.Writer, req *request.Request) server.HandlerError {
 	target := req.RequestLine.RequestTarget
 	switch target {
 	case "/yourproblem":
