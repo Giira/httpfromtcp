@@ -25,12 +25,12 @@ const (
 
 type Writer struct {
 	state WriterState
-	conn  io.Writer
+	Conn  io.Writer
 }
 
 func NewWriter(conn io.Writer) *Writer {
 	return &Writer{
-		conn:  conn,
+		Conn:  conn,
 		state: WriterInitialised,
 	}
 }
@@ -53,7 +53,7 @@ func (w *Writer) WriteStatusLine(statusCode StatusCode) error {
 		reasonString = ""
 	}
 
-	_, err := io.WriteString(w.conn, fmt.Sprintf("HTTP/1.1 %d %s\r\n", statusCode, reasonString))
+	_, err := io.WriteString(w.Conn, fmt.Sprintf("HTTP/1.1 %d %s\r\n", statusCode, reasonString))
 
 	if err != nil {
 		return fmt.Errorf("error: failed to write statusline: %v", err)
@@ -82,7 +82,7 @@ func (w *Writer) WriteHeaders(headers headers.Headers) error {
 		out = fmt.Appendf(out, "%v: %v\r\n", k, v)
 	}
 	out = append(out, []byte("\r\n")...)
-	_, err := w.conn.Write(out)
+	_, err := w.Conn.Write(out)
 	if err != nil {
 		return fmt.Errorf("error: failed to write headers to connection: %v", err)
 	}
@@ -97,7 +97,7 @@ func (w *Writer) WriteBody(p []byte) (int, error) {
 		return 0, fmt.Errorf("error: incorrect writer state for body writing: %v", w.state)
 	}
 
-	n, err := w.conn.Write(p)
+	n, err := w.Conn.Write(p)
 	if err != nil {
 		return 0, fmt.Errorf("error: failed to write body to connection: %v", err)
 	}

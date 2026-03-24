@@ -26,7 +26,7 @@ func WriteError(w *response.Writer, h HandlerError) {
 	w.WriteStatusLine(response.StatusCode(h.StatusCode))
 	headers := response.GetDefaultHeaders(len(h.Message))
 	w.WriteHeaders(headers)
-	w.conn.Write([]byte(h.Message))
+	w.Conn.Write([]byte(h.Message))
 }
 
 func Serve(port int, f Handler) (*Server, error) {
