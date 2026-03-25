@@ -13,6 +13,7 @@ import (
 type Server struct {
 	listener net.Listener
 	closed   atomic.Bool
+	writer   *response.Writer
 }
 
 type Handler func(w *response.Writer, req *request.Request) HandlerError
@@ -70,7 +71,7 @@ func (s *Server) handle(conn net.Conn, f Handler) {
 		log.Printf("error: failed to get request from reader: %v", err)
 	}
 	b := bytes.Buffer{}
-	hErr := f(&b, req)
+	hErr := f(s.writer.Conn, req)
 	if hErr.Message != "" {
 		WriteError(conn, hErr)
 		return
