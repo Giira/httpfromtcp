@@ -71,14 +71,14 @@ func (s *Server) handle(conn net.Conn, f Handler) {
 		log.Printf("error: failed to get request from reader: %v", err)
 	}
 	b := bytes.Buffer{}
-	hErr := f(s.writer.Conn, req)
+	hErr := f(s.writer, req)
 	if hErr.Message != "" {
-		WriteError(conn, hErr)
+		WriteError(s.writer, hErr)
 		return
 	} else {
 		h := response.GetDefaultHeaders(len(b.Bytes()))
-		err = response.WriteStatusLine(conn, response.CodeOK)
-		err = response.WriteHeaders(conn, h)
+		err = s.writer.WriteStatusLine(response.CodeOK)
+		err = s.writer.WriteHeaders(h)
 		if err != nil {
 			log.Printf("error: failed to write headers properly: %v", err)
 		}
