@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bytes"
 	"fmt"
 	"httpfromtcp/internal/request"
 	"httpfromtcp/internal/response"
@@ -19,7 +18,7 @@ type Server struct {
 type Handler func(w *response.Writer, req *request.Request) HandlerError
 
 type HandlerError struct {
-	StatusCode int
+	StatusCode response.StatusCode
 	Message    string
 }
 
@@ -70,7 +69,11 @@ func (s *Server) handle(conn net.Conn, f Handler) {
 	if err != nil {
 		log.Printf("error: failed to get request from reader: %v", err)
 	}
-	b := bytes.Buffer{}
+
+	s.writer = &response.Writer{
+		Conn: conn,
+	}
+
 	hErr := f(s.writer, req)
 	if hErr.Message != "" {
 		WriteError(s.writer, hErr)
