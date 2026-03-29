@@ -12,22 +12,10 @@ import (
 type Server struct {
 	listener net.Listener
 	closed   atomic.Bool
-	writer   *response.Writer
+	handler  Handler
 }
 
-type Handler func(w *response.Writer, req *request.Request) HandlerError
-
-type HandlerError struct {
-	StatusCode response.StatusCode
-	Message    string
-}
-
-func WriteError(w *response.Writer, h HandlerError) {
-	w.WriteStatusLine(response.StatusCode(h.StatusCode))
-	headers := response.GetDefaultHeaders(len(h.Message))
-	w.WriteHeaders(headers)
-	w.Conn.Write([]byte(h.Message))
-}
+type Handler func(w *response.Writer, req *request.Request)
 
 func Serve(port int, f Handler) (*Server, error) {
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
@@ -65,28 +53,17 @@ func (s *Server) listen(f Handler) {
 
 func (s *Server) handle(conn net.Conn, f Handler) {
 	defer conn.Close()
+
+	w := response.NewWriter(conn)
 	req, err := request.RequestFromReader(conn)
 	if err != nil {
-		log.Printf("error: failed to get request from reader: %v", err)
-	}
-
-	s.writer = &response.Writer{
-		Conn: conn,
-	}
-
-	hErr := f(s.writer, req)
-	if hErr.Message != "" {
-		WriteError(s.writer, hErr)
-		return
-	} else {
-		h := response.GetDefaultHeaders(len(b.Bytes()))
-		err = s.writer.WriteStatusLine(response.CodeOK)
-		err = s.writer.WriteHeaders(h)
-		if err != nil {
-			log.Printf("error: failed to write headers properly: %v", err)
-		}
-		conn.Write(b.Bytes())
+		w.WriteStatusLine(response.CodeBadRequest)
+		msg := fmt.Appendf(nil, "error: failed to parse request: %v", err)
+		h := response.GetDefaultHeaders(len(msg))
+		w.WriteHeaders(h)
+		w.WriteBody(msg)
 		return
 	}
+	s.handler(w, req)
 
 }
