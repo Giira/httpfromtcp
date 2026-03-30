@@ -26,7 +26,7 @@ func main() {
 	log.Println("Server gracefully stopped")
 }
 
-func handler(w *response.Writer, req *request.Request) server.HandlerError {
+func handler(w *response.Writer, req *request.Request) {
 	target := req.RequestLine.RequestTarget
 	switch target {
 	case "/yourproblem":
