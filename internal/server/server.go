@@ -23,9 +23,10 @@ func Serve(port int, f Handler) (*Server, error) {
 		return nil, fmt.Errorf("error listening on port: %v - %v", port, err)
 	}
 	s := &Server{
+		handler:  f,
 		listener: listener,
 	}
-	go s.listen(f)
+	go s.listen()
 	return s, nil
 }
 
@@ -37,7 +38,7 @@ func (s *Server) Close() error {
 	return nil
 }
 
-func (s *Server) listen(f Handler) {
+func (s *Server) listen() {
 	for {
 		con, err := s.listener.Accept()
 		if err != nil {
@@ -47,11 +48,11 @@ func (s *Server) listen(f Handler) {
 			log.Printf("Failed to accept connection: %v", err)
 			continue
 		}
-		go s.handle(con, f)
+		go s.handle(con)
 	}
 }
 
-func (s *Server) handle(conn net.Conn, f Handler) {
+func (s *Server) handle(conn net.Conn) {
 	defer conn.Close()
 
 	w := response.NewWriter(conn)

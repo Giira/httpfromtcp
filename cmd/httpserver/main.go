@@ -44,4 +44,5 @@ func handler(w *response.Writer, req *request.Request) {
 	h.Change("Content-Type", "text/html")
 	w.WriteHeaders(h)
 	w.WriteBody(body)
+	return
 }
