@@ -106,6 +106,8 @@ func (w *Writer) WriteBody(p []byte) (int, error) {
 	return n, nil
 }
 
-func (w *Writer) WriteChunkedBody(p []byte) (int, error)
+func (w *Writer) WriteChunkedBody(p []byte) (int, error) {
+
+}
 
 func (w *Writer) WriteChunkedBodyDone() (int, error)
