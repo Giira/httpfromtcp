@@ -51,13 +51,14 @@ func (h Headers) Set(key string, value string) {
 	key = strings.ToLower(key)
 	current, ok := h[key]
 	if ok {
-		value = current + "," + value
+		value = current + ", " + value
 	}
 	h[key] = value
 }
 
 func (h Headers) Change(key string, value string) {
 	key = strings.ToLower(key)
+	delete(h, key)
 	h[key] = value
 }
 
