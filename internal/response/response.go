@@ -115,6 +115,12 @@ func (w *Writer) WriteChunkedBody(p []byte) (int, error) {
 		return 0, fmt.Errorf("error: incorrect state for chunked body writing: %v", w.state)
 	}
 
+	i := len(p)
+	_, err := io.WriteString(w.Conn, fmt.Sprintf("%d\r\n", i))
+	if err != nil {
+		return 0, fmt.Errorf("error: failed to write %d to connection: %v", i, err)
+	}
+
 	n, err := w.Conn.Write(p)
 	if err != nil {
 		return 0, fmt.Errorf("error: failed to write: %v", err)
@@ -123,4 +129,15 @@ func (w *Writer) WriteChunkedBody(p []byte) (int, error) {
 	return n, nil
 }
 
-func (w *Writer) WriteChunkedBodyDone() (int, error)
+func (w *Writer) WriteChunkedBodyDone() (int, error) {
+	if w.state != WriterBodyInitialised {
+		return 0, fmt.Errorf("error: wrong writer state: %v", w.state)
+	}
+	w.state = WriterBodyDone
+
+	n, err := io.WriteString(w.Conn, "0\r\n\r\n")
+	if err != nil {
+		return 0, fmt.Errorf("error: failed to write: %v", err)
+	}
+	return n, nil
+}
