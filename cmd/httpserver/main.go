@@ -45,3 +45,7 @@ func handler(w *response.Writer, req *request.Request) {
 	w.WriteHeaders(h)
 	w.WriteBody(body)
 }
+
+func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
+
+}
