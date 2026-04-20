@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -28,6 +29,12 @@ func main() {
 
 func handler(w *response.Writer, req *request.Request) {
 	target := req.RequestLine.RequestTarget
+
+	if strings.HasPrefix(target, "/httpbin") {
+		handlerProxyHttpbin(w, req)
+		return
+	}
+
 	var body []byte
 	switch target {
 	case "/yourproblem":
@@ -47,5 +54,11 @@ func handler(w *response.Writer, req *request.Request) {
 }
 
 func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
+	target := req.RequestLine.RequestTarget
+	target = strings.TrimPrefix(target, "/httpbin")
+	if target == "" {
+		target = "/"
+	}
+	url := "https//httpbin.org" + target
 
 }
