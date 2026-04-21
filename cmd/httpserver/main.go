@@ -5,6 +5,7 @@ import (
 	"httpfromtcp/internal/response"
 	"httpfromtcp/internal/server"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"strings"
@@ -60,5 +61,16 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 		target = "/"
 	}
 	url := "https//httpbin.org" + target
+
+	res, err := http.Get(url)
+	var body []byte
+	if err != nil {
+		w.WriteStatusLine(response.CodeBadRequest)
+		body = []byte("<html><head><title>400 Bad Request</title></head><body><h1>Bad Request</h1><p>Your request honestly kinda sucked.</p></body></html>")
+		h := response.GetDefaultHeaders(len(body))
+		h.Change("Content-Type", "text/html")
+		w.WriteHeaders(h)
+		w.WriteBody(body)
+	}
 
 }
