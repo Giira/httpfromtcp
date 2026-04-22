@@ -66,11 +66,12 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 	var body []byte
 	if err != nil {
 		w.WriteStatusLine(response.CodeBadRequest)
-		body = []byte("<html><head><title>400 Bad Request</title></head><body><h1>Bad Request</h1><p>Your request honestly kinda sucked.</p></body></html>")
+		body = []byte("<html><head><title>500 Server Error</title></head><body><h1>Server Error</h1><p>Request to httpbin.org failed</p></body></html>")
 		h := response.GetDefaultHeaders(len(body))
 		h.Change("Content-Type", "text/html")
 		w.WriteHeaders(h)
 		w.WriteBody(body)
+		return
 	}
 
 }
