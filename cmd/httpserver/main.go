@@ -1,6 +1,7 @@
 package main
 
 import (
+	"httpfromtcp/internal/headers"
 	"httpfromtcp/internal/request"
 	"httpfromtcp/internal/response"
 	"httpfromtcp/internal/server"
@@ -73,5 +74,14 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 		w.WriteBody(body)
 		return
 	}
+
+	w.WriteStatusLine(response.CodeOK)
+	h := headers.NewHeaders()
+	h.Set("Content-Type", res.Header.Get("Content-Type"))
+	h.Set("Connection", "close")
+
+	w.WriteHeaders(h)
+
+	buffer := make([]byte, 1024)
 
 }
