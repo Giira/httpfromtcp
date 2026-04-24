@@ -83,5 +83,9 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 	w.WriteHeaders(h)
 
 	buffer := make([]byte, 1024)
-
+	n, err := res.Body.Read(buffer)
+	if err != nil {
+		//We have problems
+	}
+	log.Printf("%v bytes read", n)
 }
