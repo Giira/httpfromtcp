@@ -66,7 +66,7 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 	res, err := http.Get(url)
 	var body []byte
 	if err != nil {
-		w.WriteStatusLine(response.CodeBadRequest)
+		w.WriteStatusLine(response.CodeServerError)
 		body = []byte("<html><head><title>500 Server Error</title></head><body><h1>Server Error</h1><p>Request to httpbin.org failed</p></body></html>")
 		h := response.GetDefaultHeaders(len(body))
 		h.Change("Content-Type", "text/html")
