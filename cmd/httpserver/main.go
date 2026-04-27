@@ -32,10 +32,10 @@ func main() {
 func handler(w *response.Writer, req *request.Request) {
 	target := req.RequestLine.RequestTarget
 
-	if strings.HasPrefix(target, "/httpbin") {
-		handlerProxyHttpbin(w, req)
-		return
-	}
+	// if strings.HasPrefix(target, "/httpbin") {
+	// 	handlerProxyHttpbin(w, req)
+	// 	return
+	// }
 
 	var body []byte
 	switch target {
@@ -82,7 +82,7 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 
 	w.WriteHeaders(h)
 
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, 32)
 
 	for {
 		n, err := res.Body.Read(buffer)
