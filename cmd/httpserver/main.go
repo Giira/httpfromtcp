@@ -5,6 +5,7 @@ import (
 	"httpfromtcp/internal/request"
 	"httpfromtcp/internal/response"
 	"httpfromtcp/internal/server"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -32,10 +33,10 @@ func main() {
 func handler(w *response.Writer, req *request.Request) {
 	target := req.RequestLine.RequestTarget
 
-	// if strings.HasPrefix(target, "/httpbin") {
-	// 	handlerProxyHttpbin(w, req)
-	// 	return
-	// }
+	if strings.HasPrefix(target, "/httpbin") {
+		handlerProxyHttpbin(w, req)
+		return
+	}
 
 	var body []byte
 	switch target {
@@ -75,6 +76,8 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 		return
 	}
 
+	defer res.Body.Close()
+
 	w.WriteStatusLine(response.CodeOK)
 	h := headers.NewHeaders()
 	h.Set("Content-Type", res.Header.Get("Content-Type"))
@@ -82,7 +85,7 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 
 	w.WriteHeaders(h)
 
-	buffer := make([]byte, 32)
+	buffer := make([]byte, 1024)
 
 	for {
 		n, err := res.Body.Read(buffer)
@@ -100,6 +103,9 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 				log.Printf("error writing chunkedly: %v\n", err)
 				break
 			}
+		}
+		if err == io.EOF {
+			break
 		}
 	}
 }
