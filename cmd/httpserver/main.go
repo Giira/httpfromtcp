@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"httpfromtcp/internal/headers"
 	"httpfromtcp/internal/request"
 	"httpfromtcp/internal/response"
@@ -107,5 +108,9 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 		if err == io.EOF {
 			break
 		}
+	}
+	_, err = w.WriteChunkedBodyDone()
+	if err != nil {
+		fmt.Printf("Error ending chunked body writing: %v\n", err)
 	}
 }

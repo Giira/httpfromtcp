@@ -137,7 +137,7 @@ func (w *Writer) WriteChunkedBodyDone() (int, error) {
 
 	n, err := io.WriteString(w.Conn, "0\r\n\r\n")
 	if err != nil {
-		return 0, fmt.Errorf("error: failed to write: %v", err)
+		return n, fmt.Errorf("error: failed to write: %v", err)
 	}
 	return n, nil
 }
