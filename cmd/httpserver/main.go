@@ -59,17 +59,14 @@ func handler(w *response.Writer, req *request.Request) {
 
 func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 	target := req.RequestLine.RequestTarget
-	target = strings.TrimPrefix(target, "/httpbin")
-	if target == "" {
-		target = "/"
-	}
-	url := "https//httpbin.org" + target
+	target = strings.TrimPrefix(target, "/httpbin/")
+	url := "https://httpbin.org/" + target
+	fmt.Printf("Attempting to send data to %v", url)
 
 	res, err := http.Get(url)
-	var body []byte
 	if err != nil {
 		w.WriteStatusLine(response.CodeServerError)
-		body = []byte("<html><head><title>500 Server Error</title></head><body><h1>Server Error</h1><p>Request to httpbin.org failed</p></body></html>")
+		body := []byte("<html><head><title>500 Server Error</title></head><body><h1>Server Error</h1><p>Request to httpbin.org failed</p></body></html>")
 		h := response.GetDefaultHeaders(len(body))
 		h.Change("Content-Type", "text/html")
 		w.WriteHeaders(h)
@@ -90,15 +87,10 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 
 	for {
 		n, err := res.Body.Read(buffer)
-		if err != nil {
-			log.Printf("error reading response body: %v\n", err)
-			break
-		}
+
 		log.Printf("%v bytes read\n", n)
 
 		if n > 0 {
-			body = append(body, buffer[:n]...)
-
 			_, err := w.WriteChunkedBody(buffer[:n])
 			if err != nil {
 				log.Printf("error writing chunkedly: %v\n", err)
@@ -106,6 +98,10 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 			}
 		}
 		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			fmt.Printf("error: failure to read response body: %v", err)
 			break
 		}
 	}
