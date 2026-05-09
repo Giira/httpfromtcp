@@ -141,3 +141,7 @@ func (w *Writer) WriteChunkedBodyDone() (int, error) {
 	}
 	return n, nil
 }
+
+func (w *Writer) WriteTrailers(h headers.Headers) error {
+
+}

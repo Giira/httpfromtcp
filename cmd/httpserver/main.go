@@ -83,7 +83,7 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 
 	w.WriteHeaders(h)
 
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, 32)
 
 	for {
 		n, err := res.Body.Read(buffer)
