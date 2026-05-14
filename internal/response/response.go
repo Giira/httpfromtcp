@@ -22,6 +22,7 @@ const (
 	WriterHeadersDone
 	WriterBodyInitialised
 	WriterBodyDone
+	WriterTrailersDone
 )
 
 type Writer struct {
@@ -143,5 +144,7 @@ func (w *Writer) WriteChunkedBodyDone() (int, error) {
 }
 
 func (w *Writer) WriteTrailers(h headers.Headers) error {
-
+	if w.state != WriterBodyDone {
+		return fmt.Errorf("error: wrong writer state: %v", w.state)
+	}
 }
