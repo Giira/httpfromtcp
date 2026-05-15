@@ -147,4 +147,9 @@ func (w *Writer) WriteTrailers(h headers.Headers) error {
 	if w.state != WriterBodyDone {
 		return fmt.Errorf("error: wrong writer state: %v", w.state)
 	}
+	h.Delete("Content-Length")
+
+TODO:
+	h.Set("X-Content-SHA256", "<hash>")
+	h.Set("X-Content-Length", "<length of raw body in bytes>")
 }

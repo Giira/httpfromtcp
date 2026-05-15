@@ -62,6 +62,11 @@ func (h Headers) Change(key string, value string) {
 	h[key] = value
 }
 
+func (h Headers) Delete(key string) {
+	key = strings.ToLower(key)
+	delete(h, key)
+}
+
 func checkChars(text string) bool {
 	spec := strings.Split("!#$%&'*+-.^_`|~", "")
 	for _, char := range text {
