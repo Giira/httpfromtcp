@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"httpfromtcp/internal/headers"
 	"httpfromtcp/internal/request"
@@ -11,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 )
@@ -84,9 +86,11 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 	w.WriteHeaders(h)
 
 	buffer := make([]byte, 32)
+	var unchunkedBody []byte
 
 	for {
 		n, err := res.Body.Read(buffer)
+		unchunkedBody = append(unchunkedBody, buffer[:n]...)
 
 		log.Printf("%v bytes read\n", n)
 
@@ -109,4 +113,12 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 	if err != nil {
 		fmt.Printf("Error ending chunked body writing: %v\n", err)
 	}
+
+	bodyHash := sha256.Sum256(unchunkedBody)
+
+	trailers := headers.NewHeaders()
+	trailers.Change("X-Content-SHA256", string(fmt.Sprintf("%v", bodyHash)))
+	trailers.Change("X-Content-Length", strconv.Itoa(len(unchunkedBody)))
+
+	w.WriteTrailers(trailers)
 }
