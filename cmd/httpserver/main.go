@@ -85,7 +85,7 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 
 	w.WriteHeaders(h)
 
-	buffer := make([]byte, 32)
+	buffer := make([]byte, 1024)
 	var unchunkedBody []byte
 
 	for {
