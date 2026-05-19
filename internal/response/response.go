@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"httpfromtcp/internal/headers"
 	"io"
+	"log"
 )
 
 type StatusCode int
@@ -136,11 +137,11 @@ func (w *Writer) WriteChunkedBodyDone() (int, error) {
 	}
 	w.state = WriterBodyDone
 
-	n, err := io.WriteString(w.Conn, "0\r\n\r\n")
-	if err != nil {
-		return n, fmt.Errorf("error: failed to write: %v", err)
-	}
-	return n, nil
+	// n, err := io.WriteString(w.Conn, "0\r\n\r\n")
+	// if err != nil {
+	// 	return n, fmt.Errorf("error: failed to write: %v", err)
+	// }
+	return 0, nil
 }
 
 func (w *Writer) WriteTrailers(h headers.Headers) error {
@@ -150,6 +151,7 @@ func (w *Writer) WriteTrailers(h headers.Headers) error {
 
 	w.Conn.Write([]byte("0\r\n"))
 	w.WriteHeaders(h)
+	log.Printf("trailers written: %v", h)
 	w.state = WriterTrailersDone
 
 	return nil
