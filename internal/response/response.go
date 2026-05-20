@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"httpfromtcp/internal/headers"
 	"io"
-	"log"
 )
 
 type StatusCode int
@@ -23,7 +22,6 @@ const (
 	WriterHeadersDone
 	WriterBodyInitialised
 	WriterBodyDone
-	WriterTrailersDone
 )
 
 type Writer struct {
@@ -137,22 +135,30 @@ func (w *Writer) WriteChunkedBodyDone() (int, error) {
 	}
 	w.state = WriterBodyDone
 
-	// n, err := io.WriteString(w.Conn, "0\r\n\r\n")
-	// if err != nil {
-	// 	return n, fmt.Errorf("error: failed to write: %v", err)
-	// }
+	n, err := io.WriteString(w.Conn, "0\r\n\r\n")
+	if err != nil {
+		return n, fmt.Errorf("error: failed to write: %v", err)
+	}
 	return 0, nil
 }
 
 func (w *Writer) WriteTrailers(h headers.Headers) error {
-	if w.state != WriterBodyDone {
+	if w.state != WriterBodyInitialised {
 		return fmt.Errorf("error: wrong writer state: %v", w.state)
 	}
 
 	w.Conn.Write([]byte("0\r\n"))
-	w.WriteHeaders(h)
-	log.Printf("trailers written: %v", h)
-	w.state = WriterTrailersDone
+
+	out := []byte{}
+	for k, v := range h {
+		out = fmt.Appendf(out, "%v: %v\r\n", k, v)
+	}
+	_, err := w.Conn.Write(out)
+	if err != nil {
+		return fmt.Errorf("error: failed to write trailers to connection: %v", err)
+	}
+
+	w.state = WriterBodyDone
 
 	return nil
 }

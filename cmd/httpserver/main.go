@@ -70,7 +70,7 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 		w.WriteStatusLine(response.CodeServerError)
 		body := []byte("<html><head><title>500 Server Error</title></head><body><h1>Server Error</h1><p>Request to httpbin.org failed</p></body></html>")
 		h := response.GetDefaultHeaders(len(body))
-		h.Change("Content-Type", "text/html")
+		h.Change("Content-Type", "`text/html`")
 		w.WriteHeaders(h)
 		w.WriteBody(body)
 		return
@@ -109,16 +109,12 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 			break
 		}
 	}
-	_, err = w.WriteChunkedBodyDone()
-	if err != nil {
-		fmt.Printf("Error ending chunked body writing: %v\n", err)
-	}
 
 	bodyHash := sha256.Sum256(unchunkedBody)
 
 	trailers := headers.NewHeaders()
-	trailers.Change("X-Content-SHA256", string(fmt.Sprintf("%v", bodyHash)))
-	trailers.Change("X-Content-Length", strconv.Itoa(len(unchunkedBody)))
+	trailers.Set("X-Content-Sha256", string(fmt.Sprintf("%x", bodyHash)))
+	trailers.Set("X-Content-Length", strconv.Itoa(len(unchunkedBody)))
 
 	w.WriteTrailers(trailers)
 }
