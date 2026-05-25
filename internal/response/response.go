@@ -133,9 +133,8 @@ func (w *Writer) WriteChunkedBodyDone() (int, error) {
 	if w.state != WriterBodyInitialised {
 		return 0, fmt.Errorf("error: wrong writer state: %v", w.state)
 	}
-	w.state = WriterBodyDone
 
-	n, err := io.WriteString(w.Conn, "0\r\n\r\n")
+	n, err := io.WriteString(w.Conn, "0\r\n")
 	if err != nil {
 		return n, fmt.Errorf("error: failed to write: %v", err)
 	}

@@ -109,6 +109,7 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 			break
 		}
 	}
+	w.WriteChunkedBodyDone()
 
 	bodyHash := sha256.Sum256(unchunkedBody)
 
