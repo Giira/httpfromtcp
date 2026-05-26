@@ -1,6 +1,7 @@
 package response
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"httpfromtcp/internal/headers"
 	"io"
@@ -115,10 +116,10 @@ func (w *Writer) WriteChunkedBody(p []byte) (int, error) {
 		return 0, fmt.Errorf("error: incorrect state for chunked body writing: %v", w.state)
 	}
 
-	i := len(p)
-	_, err := io.WriteString(w.Conn, fmt.Sprintf("%d\r\n", i))
+	x := sha256.Sum256(fmt.Appendf(nil, "%d", len(p)))
+	_, err := io.WriteString(w.Conn, fmt.Sprintf("%x\r\n", x))
 	if err != nil {
-		return 0, fmt.Errorf("error: failed to write %d to connection: %v", i, err)
+		return 0, fmt.Errorf("error: failed to write %x to connection: %v", x, err)
 	}
 
 	n, err := w.Conn.Write(p)
