@@ -85,7 +85,7 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 
 	w.WriteHeaders(h)
 
-	buffer := make([]byte, 32)
+	buffer := make([]byte, 1024)
 	var unchunkedBody []byte
 
 	for {
@@ -95,6 +95,7 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 		log.Printf("%v bytes read\n", n)
 
 		if n > 0 {
+			w.Conn.Write(fmt.Appendf(make([]byte, 0), "%x\r\n", n))
 			_, err := w.WriteChunkedBody(buffer[:n])
 			if err != nil {
 				log.Printf("error writing chunkedly: %v\n", err)
