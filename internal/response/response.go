@@ -158,6 +158,8 @@ func (w *Writer) WriteTrailers(h headers.Headers) error {
 		return fmt.Errorf("error: failed to write trailers to connection: %v", err)
 	}
 
+	_, err = w.Conn.Write([]byte("\r\n"))
+
 	w.state = WriterBodyDone
 
 	return nil
