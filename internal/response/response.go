@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"httpfromtcp/internal/headers"
 	"io"
+	"log"
 )
 
 type StatusCode int
@@ -159,6 +160,7 @@ func (w *Writer) WriteTrailers(h headers.Headers) error {
 	}
 
 	_, err = w.Conn.Write([]byte("\r\n"))
+	log.Print("*Screams until the trailers are recognised*")
 
 	w.state = WriterBodyDone
 
