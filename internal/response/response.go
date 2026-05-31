@@ -135,7 +135,7 @@ func (w *Writer) WriteChunkedBodyDone() (int, error) {
 		return 0, fmt.Errorf("error: wrong writer state: %v", w.state)
 	}
 
-	n, err := io.WriteString(w.Conn, "0\r\n")
+	n, err := io.WriteString(w.Conn, "\r\n")
 	if err != nil {
 		return n, fmt.Errorf("error: failed to write: %v", err)
 	}
@@ -147,7 +147,7 @@ func (w *Writer) WriteTrailers(h headers.Headers) error {
 		return fmt.Errorf("error: wrong writer state: %v", w.state)
 	}
 
-	w.Conn.Write([]byte("0\r\n"))
+	w.Conn.Write([]byte("\r\n"))
 
 	out := []byte{}
 	for k, v := range h {
@@ -157,8 +157,6 @@ func (w *Writer) WriteTrailers(h headers.Headers) error {
 	if err != nil {
 		return fmt.Errorf("error: failed to write trailers to connection: %v", err)
 	}
-
-	_, err = w.Conn.Write([]byte("\r\n"))
 
 	w.state = WriterBodyDone
 
