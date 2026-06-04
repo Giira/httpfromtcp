@@ -49,6 +49,9 @@ func handler(w *response.Writer, req *request.Request) {
 	case "/myproblem":
 		w.WriteStatusLine(response.CodeServerError)
 		body = []byte("<html><head><title>500 Internal Server Error</title></head><body><h1>Internal Server Error</h1><p>Okay, you know what? This one is on me.</p></body></html>")
+	case "/video":
+		handlerVideo(w, req)
+		return
 	default:
 		w.WriteStatusLine(response.CodeOK)
 		body = []byte("<html><head><title>200 OK</title></head><body><h1>Success!</h1><p>Your request was an absolute banger.</p></body></html>")
@@ -119,4 +122,28 @@ func handlerProxyHttpbin(w *response.Writer, req *request.Request) {
 	trailers.Set("X-Content-Length", strconv.Itoa(len(unchunkedBody)))
 
 	w.WriteTrailers(trailers)
+}
+
+func handlerVideo(w *response.Writer, req *request.Request) {
+	videoRead, err := os.ReadFile("assets/vim.mp4")
+	if err != nil {
+		log.Printf("error reading video file: %v", err)
+		return
+	}
+
+	w.WriteStatusLine(response.CodeOK)
+
+	h := response.GetDefaultHeaders(len(videoRead))
+	h.Change("Content-Type", "video/mp4")
+
+	err = w.WriteHeaders(h)
+	if err != nil {
+		log.Printf("error writing headers: %v", err)
+	}
+
+	_, err = w.WriteBody(videoRead)
+	if err != nil {
+		log.Printf("error writing video body: %v", err)
+	}
+
 }
